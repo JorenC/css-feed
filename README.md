@@ -32,6 +32,18 @@ uptime checks.
 - `GET /api/channels/:channelId/messages` → `{ channelId, channelName, guildId, messages: [...] }`, oldest → newest, up to `MAX_MESSAGES_PER_CHANNEL` (default 100). 404 if that channel isn't watched.
 - `GET /api/feed` → `{ channels: [{ id, name, guildId, messages: [...] }, ...] }` for *every* watched channel in one call — use this when you want to automatically process all watched channels without first calling `/api/channels` and looping. `/api/channels` + per-channel `/messages` still exist for when you only need one channel or the full unwatched channel list (e.g. building a selector to add new ones via `/watch`).
 
+### Images: avatars vs. attachments
+
+Both are already in every message object — `authorAvatar` (a direct CDN URL) and `attachments: [{
+url, name, contentType }]`. Avatar URLs are stable and can be used directly in an `<img>` forever
+(until the user changes their avatar). **Attachment URLs are not** — Discord signs them with a
+short expiry (roughly 24h), and messages live in this feed's cache far longer than that. To handle
+this, `/api/channels/:channelId/messages` and `/api/feed` both check every attachment URL on the
+way out and, if it's expiring soon, call Discord's `/attachments/refresh-urls` endpoint to get a
+fresh one before responding — and persist the refreshed URL back to SQLite so it doesn't need
+refreshing again for another ~24h. This happens automatically; the consuming app doesn't need to
+do anything special, just use `attachments[].url` as given in each response.
+
 There's no push/websocket layer on purpose — least integration cost for the consuming app. Have it
 poll `GET /api/channels/:channelId/messages` every few seconds with the `X-Api-Key` header set;
 each response is the full current snapshot (edits and deletions just show up), so there's no

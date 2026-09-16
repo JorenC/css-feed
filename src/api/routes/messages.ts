@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { getWatchedChannel } from "../../db/channels.js";
-import { getLastMessages } from "../../db/messages.js";
+import { getLastMessages, updateAttachments } from "../../db/messages.js";
+import { refreshExpiringAttachmentUrls } from "../../discord/attachments.js";
 
 export const messagesRouter = Router();
 
-messagesRouter.get("/:channelId/messages", (req, res) => {
+messagesRouter.get("/:channelId/messages", async (req, res) => {
   const { channelId } = req.params;
   const channel = getWatchedChannel(channelId);
   if (!channel) {
@@ -13,6 +14,8 @@ messagesRouter.get("/:channelId/messages", (req, res) => {
   }
 
   const messages = getLastMessages(channelId);
+  await refreshExpiringAttachmentUrls(messages, updateAttachments);
+
   res.json({
     channelId,
     channelName: channel.name,

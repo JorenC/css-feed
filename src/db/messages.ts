@@ -48,6 +48,10 @@ const updateContentStmt = db.prepare(`
 
 const deleteStmt = db.prepare(`DELETE FROM messages WHERE id = ? AND channel_id = ?`);
 
+const updateAttachmentsStmt = db.prepare(`
+  UPDATE messages SET attachments = ? WHERE id = ? AND channel_id = ?
+`);
+
 const listStmt = db.prepare(`
   SELECT * FROM messages WHERE channel_id = ? ORDER BY seq DESC LIMIT ?
 `);
@@ -87,6 +91,10 @@ export function updateMessageContent(id: string, channelId: string, content: str
 
 export function deleteMessage(id: string, channelId: string): void {
   deleteStmt.run(id, channelId);
+}
+
+export function updateAttachments(id: string, channelId: string, attachments: NormalizedMessage["attachments"]): void {
+  updateAttachmentsStmt.run(JSON.stringify(attachments), id, channelId);
 }
 
 export function getLastMessages(channelId: string, limit = config.maxMessagesPerChannel): StoredMessage[] {
