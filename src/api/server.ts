@@ -4,6 +4,7 @@ import { config } from "../config.js";
 import { requireApiKey } from "./auth.js";
 import { channelsRouter } from "./routes/channels.js";
 import { messagesRouter } from "./routes/messages.js";
+import { feedRouter } from "./routes/feed.js";
 
 export function createServer() {
   const app = express();
@@ -15,6 +16,7 @@ export function createServer() {
 
   app.use("/api/channels", requireApiKey, channelsRouter);
   app.use("/api/channels", requireApiKey, messagesRouter);
+  app.use("/api/feed", requireApiKey, feedRouter);
 
   return app;
 }

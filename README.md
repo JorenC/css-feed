@@ -30,6 +30,7 @@ uptime checks.
 - `GET /api/health` → `{ ok: true }` (no auth required)
 - `GET /api/channels` → every text channel the bot can see, each flagged `watched: true/false`. Use this to build the frontend's channel selector — only `watched` channels have message data.
 - `GET /api/channels/:channelId/messages` → `{ channelId, channelName, guildId, messages: [...] }`, oldest → newest, up to `MAX_MESSAGES_PER_CHANNEL` (default 100). 404 if that channel isn't watched.
+- `GET /api/feed` → `{ channels: [{ id, name, guildId, messages: [...] }, ...] }` for *every* watched channel in one call — use this when you want to automatically process all watched channels without first calling `/api/channels` and looping. `/api/channels` + per-channel `/messages` still exist for when you only need one channel or the full unwatched channel list (e.g. building a selector to add new ones via `/watch`).
 
 There's no push/websocket layer on purpose — least integration cost for the consuming app. Have it
 poll `GET /api/channels/:channelId/messages` every few seconds with the `X-Api-Key` header set;
