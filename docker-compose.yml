@@ -1,0 +1,16 @@
+services:
+  css-feed:
+    build: .
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - PORT=3000
+      - DB_PATH=/data/css-feed.db
+    volumes:
+      - css-feed-data:/data
+    ports:
+      - "3000:3000"
+
+volumes:
+  css-feed-data:
